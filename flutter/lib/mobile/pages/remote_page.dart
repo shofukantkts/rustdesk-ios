@@ -60,7 +60,7 @@ class RemotePage extends StatefulWidget {
 
 class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
   Timer? _timer;
-  bool _showBar = !isWebDesktop;
+  bool _showBar = isWebDesktop; // hidden by default on mobile; revealed by the right-side menu button
   bool _showGestureHelp = false;
   String _value = '';
   Orientation? _currentOrientation;
@@ -443,7 +443,6 @@ class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final keyboardIsVisible =
         keyboardVisibilityController.isVisible && _showEdit;
-    final showActionButton = !_showBar || keyboardIsVisible || _showGestureHelp;
 
     return WillPopScope(
       onWillPop: () async {
@@ -451,35 +450,8 @@ class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
         return false;
       },
       child: Scaffold(
-          // workaround for https://github.com/rustdesk/rustdesk/issues/3131
-          floatingActionButtonLocation: keyboardIsVisible
-              ? FABLocation(FloatingActionButtonLocation.endFloat, 0, -35)
-              : null,
-          floatingActionButton: !showActionButton
-              ? null
-              : FloatingActionButton(
-                  mini: !keyboardIsVisible,
-                  child: Icon(
-                    (keyboardIsVisible || _showGestureHelp)
-                        ? Icons.expand_more
-                        : Icons.expand_less,
-                    color: Colors.white,
-                  ),
-                  backgroundColor: MyTheme.accent,
-                  onPressed: () {
-                    setState(() {
-                      if (keyboardIsVisible) {
-                        _showEdit = false;
-                        gFFI.invokeMethod("enable_soft_keyboard", false);
-                        _mobileFocusNode.unfocus();
-                        _physicalFocusNode.requestFocus();
-                      } else if (_showGestureHelp) {
-                        _showGestureHelp = false;
-                      } else {
-                        _showBar = !_showBar;
-                      }
-                    });
-                  }),
+          // Right-side semi-transparent controls replace the bottom FAB (hidden-menu toggle):
+          // menu (open/close the toolbar) and keyboard (open/close the soft keyboard).
           bottomNavigationBar: Obx(() => Stack(
                 alignment: Alignment.bottomCenter,
                 children: [
@@ -497,7 +469,9 @@ class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
                 ],
               )),
           body: Obx(
-            () => getRawPointerAndKeyBody(Overlay(
+            () => Stack(
+              children: [
+                getRawPointerAndKeyBody(Overlay(
               initialEntries: [
                 OverlayEntry(builder: (context) {
                   return Container(
@@ -530,8 +504,64 @@ class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
                 })
               ],
             )),
+                // Right-side semi-transparent controls: keyboard + menu.
+                if (!isWebDesktop) _rightSideControls(),
+              ],
+            ),
           )),
     );
+  }
+
+  /// Right-side floating controls replacing the old bottom FAB (hidden-menu toggle):
+  /// a semi-transparent keyboard button (opens/closes the soft keyboard) and
+  /// a semi-transparent menu button (opens/closes the toolbar).
+  Widget _rightSideControls() {
+    final keyboardIsVisible =
+        keyboardVisibilityController.isVisible && _showEdit;
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Padding(
+        padding: const EdgeInsets.only(right: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _semiTransparentControl(
+              icon: Icons.keyboard,
+              onPressed: () {
+                if (keyboardIsVisible) {
+                  setState(() {
+                    _showEdit = false;
+                    gFFI.invokeMethod("enable_soft_keyboard", false);
+                    _mobileFocusNode.unfocus();
+                    _physicalFocusNode.requestFocus();
+                  });
+                } else {
+                  openKeyboard();
+                }
+              },
+            ),
+            const SizedBox(height: 12),
+            _semiTransparentControl(
+              icon: Icons.menu,
+              onPressed: () => setState(() => _showBar = !_showBar),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _semiTransparentControl({
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return Material(
+      color: Colors.black.withOpacity(0.45),
+      shape: const CircleBorder(),
+      child: IconButton(
+        icon: Icon(icon, color: Colors.white),
+        onPressed: onPressed,
+      ));
   }
 
   Widget getRawPointerAndKeyBody(Widget child) {
