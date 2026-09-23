@@ -506,10 +506,10 @@ class _RawTouchGestureDetectorRegionState
       }
       _mouseScrollIntegral += d.focalPointDelta.dy / 4;
       if (_mouseScrollIntegral > 1) {
-        inputModel.scroll(1);
+        inputModel.scroll(inputModel.scrollLines);
         _mouseScrollIntegral = 0;
       } else if (_mouseScrollIntegral < -1) {
-        inputModel.scroll(-1);
+        inputModel.scroll(-inputModel.scrollLines);
         _mouseScrollIntegral = 0;
       }
     }

@@ -291,6 +291,12 @@ const int kMinTrackpadSpeed = 10;
 const int kDefaultTrackpadSpeed = 100;
 const int kMaxTrackpadSpeed = 1000;
 
+// two-finger scroll lines per wheel tick
+const String kKeyScrollLines = 'scroll-lines';
+const int kMinScrollLines = 1;
+const int kDefaultScrollLines = 1;
+const int kMaxScrollLines = 10;
+
 // relative mouse mode
 /// Throttle duration (in milliseconds) for updating pointer lock center during
 /// window move/resize events. Lower values provide more responsive updates but

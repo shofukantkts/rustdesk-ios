@@ -434,6 +434,7 @@ class InputModel {
   static const double _trackpadAxisLockRatio = 1.6;
   int _trackpadSpeed = kDefaultTrackpadSpeed;
   double _trackpadSpeedInner = kDefaultTrackpadSpeed / 100.0;
+  int _scrollLines = kDefaultScrollLines;
   var _trackpadScrollUnsent = Offset.zero;
 
   // Mobile relative mouse delta accumulators (for slow/fine movements).
@@ -616,6 +617,21 @@ class InputModel {
       _trackpadSpeed = kDefaultTrackpadSpeed;
     }
     _trackpadSpeedInner = _trackpadSpeed / 100.0;
+  }
+
+  /// Number of lines per two-finger scroll wheel tick (global local option).
+  int get scrollLines => _scrollLines;
+
+  Future<void> updateScrollLines() async {
+    final v = await bind.mainGetLocalOption(key: kKeyScrollLines);
+    final parsed = int.tryParse(v ?? '');
+    if (parsed != null &&
+        parsed >= kMinScrollLines &&
+        parsed <= kMaxScrollLines) {
+      _scrollLines = parsed;
+    } else {
+      _scrollLines = kDefaultScrollLines;
+    }
   }
 
   void handleKeyDownEventModifiers(KeyEvent e) {

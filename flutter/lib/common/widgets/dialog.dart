@@ -1998,6 +1998,85 @@ void trackpadSpeedDialog(SessionID sessionId, FFI ffi) {
   });
 }
 
+void scrollLinesDialog(SessionID sessionId, FFI ffi) {
+  final initLines = ffi.inputModel.scrollLines;
+  final curLines = SimpleWrapper(initLines);
+  final controller = TextEditingController(text: initLines.toString());
+  var isSubmitting = false;
+  ffi.dialogManager.show((setState, close, context) {
+    Future<void> submit() async {
+      if (isSubmitting) {
+        return;
+      }
+      final lines = int.tryParse(controller.text);
+      if (lines == null ||
+          lines < kMinScrollLines ||
+          lines > kMaxScrollLines) {
+        return;
+      }
+      setState(() => isSubmitting = true);
+      try {
+        await bind.mainSetLocalOption(
+            key: kKeyScrollLines, value: lines.toString());
+        await ffi.inputModel.updateScrollLines();
+        close();
+      } catch (error, stackTrace) {
+        debugPrint('Failed to save scroll lines: $error\n$stackTrace');
+        setState(() => isSubmitting = false);
+      }
+    }
+
+    return CustomAlertDialog(
+      title: Text(
+        translate('Scroll lines'),
+        style: const TextStyle(fontSize: 21),
+      ),
+      content: StatefulBuilder(builder: (context, setDialogState) {
+        return Row(
+          children: [
+            Expanded(
+              flex: 3,
+              child: Slider(
+                value: curLines.value.toDouble(),
+                min: kMinScrollLines.toDouble(),
+                max: kMaxScrollLines.toDouble(),
+                divisions: kMaxScrollLines - kMinScrollLines,
+                label: curLines.value.toString(),
+                onChanged: (v) => setDialogState(() {
+                  curLines.value = v.round();
+                  controller.text = curLines.value.toString();
+                }),
+              ),
+            ),
+            Expanded(
+                flex: 1,
+                child: SizedBox(
+                  width: 56,
+                  child: TextField(
+                    controller: controller,
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 13),
+                    onChanged: (t) =>
+                        curLines.value = int.tryParse(t) ?? curLines.value,
+                    onSubmitted: (_) => submit(),
+                    decoration: const InputDecoration(hintText: '1-10'),
+                  ),
+                )),
+          ],
+        );
+      }),
+      actions: _trackpadSpeedDialogActions(
+        isSubmitting: isSubmitting,
+        close: close,
+        submit: submit,
+      ),
+      onSubmit: isSubmitting ? null : submit,
+      onCancel: isSubmitting ? null : close,
+    );
+  });
+}
+
 void deleteConfirmDialog(Function onSubmit, String title) async {
   gFFI.dialogManager.show(
     (setState, close, context) {

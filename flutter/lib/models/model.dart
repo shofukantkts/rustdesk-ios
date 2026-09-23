@@ -3900,6 +3900,7 @@ class FFI {
     // mouse-mode cursor speed across reconnects (per-session, persistent,
     // isolated between peers).
     inputModel.updateTrackpadSpeed();
+    inputModel.updateScrollLines();
 
     // CAUTION: `sessionStart()` and `sessionStartWithDisplays()` are an async functions.
     // Though the stream is returned immediately, the stream may not be ready.

@@ -808,6 +808,10 @@ class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
       child: Text(translate('Trackpad speed')),
       onPressed: () => trackpadSpeedDialog(sessionId, gFFI),
     ));
+    menus.add(TTextMenu(
+      child: Text(translate('Scroll lines')),
+      onPressed: () => scrollLinesDialog(sessionId, gFFI),
+    ));
 
     final List<PopupMenuEntry<int>> more = [
       ...mobileActionMenus
