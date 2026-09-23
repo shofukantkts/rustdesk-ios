@@ -50,7 +50,15 @@ class _RemoteKeyboardPanelState extends State<RemoteKeyboardPanel> {
     final height = (media.size.height - media.viewInsets.bottom)
         .clamp(240.0, double.infinity);
     final maxHeight = (height - 72.0).clamp(180.0, double.infinity);
-    return (height * 0.72).clamp(180.0, maxHeight).toDouble();
+    final isPortrait = media.orientation == Orientation.portrait;
+    final ratio = isPortrait
+        ? (widget.tab == RemoteKeyboardTab.computer ? 0.50 : 0.58)
+        : 0.72;
+    final minHeight = (isPortrait
+        ? (widget.tab == RemoteKeyboardTab.computer ? 360.0 : 300.0)
+        : 180.0)
+        .clamp(180.0, maxHeight);
+    return (height * ratio).clamp(minHeight, maxHeight).toDouble();
   }
 
   @override
@@ -178,20 +186,27 @@ class _RemoteKeyboardPanelState extends State<RemoteKeyboardPanel> {
     ];
 
     return LayoutBuilder(builder: (context, constraints) {
+      final isPortrait =
+          MediaQuery.of(context).orientation == Orientation.portrait;
       final columns = constraints.maxWidth >= 1000
           ? 6
           : constraints.maxWidth >= 620
               ? 5
               : 3;
       return GridView.builder(
-        padding: const EdgeInsets.fromLTRB(42, 10, 42, 24),
-        physics: const NeverScrollableScrollPhysics(),
+        padding: EdgeInsets.fromLTRB(isPortrait ? 14 : 42, 10,
+            isPortrait ? 14 : 42, 24),
+        physics: const BouncingScrollPhysics(),
         itemCount: shortcuts.length,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: columns,
           crossAxisSpacing: 10,
           mainAxisSpacing: 10,
-          childAspectRatio: constraints.maxWidth >= 620 ? 1.65 : 1.25,
+          childAspectRatio: isPortrait
+              ? 1.45
+              : constraints.maxWidth >= 620
+                  ? 1.65
+                  : 1.25,
         ),
         itemBuilder: (context, index) {
           final shortcut = shortcuts[index];
@@ -234,62 +249,12 @@ class _RemoteKeyboardPanelState extends State<RemoteKeyboardPanel> {
   }
 
   Widget _buildComputerKeyboard() {
+    final isPortrait =
+        MediaQuery.of(context).orientation == Orientation.portrait;
     final commandKeyLabel = widget.isMac ? 'Cmd' : 'Win';
     return Column(
       children: [
-        SizedBox(
-          height: 48,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 42, vertical: 3),
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 190,
-                  child: Row(
-                    children: [
-                      Checkbox(
-                        value: _combinedKeyMode,
-                        activeColor: _selectedColor,
-                        checkColor: Colors.white,
-                        side: const BorderSide(color: Colors.white70),
-                        onChanged: _setCombinedKeyMode,
-                      ),
-                      Expanded(
-                        child: InkWell(
-                          onTap: () =>
-                              _setCombinedKeyMode(!_combinedKeyMode),
-                          child: Text(
-                            translate('Combined key mode'),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 16),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                for (final modifier in [
-                  ('Ctrl', 'VK_CONTROL', _ctrl),
-                  ('Shift', 'VK_SHIFT', _shift),
-                  ('Alt', 'VK_MENU', _alt),
-                  (commandKeyLabel, 'Meta', _command),
-                ])
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: _keyCap(
-                        modifier.$1,
-                        onTap: () => _toggleModifier(modifier.$2),
-                        active: modifier.$3,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
+        _buildModifierBar(commandKeyLabel, isPortrait),
         Expanded(
           child: PageView(
             controller: _pageController,
@@ -321,6 +286,77 @@ class _RemoteKeyboardPanelState extends State<RemoteKeyboardPanel> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildModifierBar(String commandKeyLabel, bool isPortrait) {
+    final modifiers = [
+      ('Ctrl', 'VK_CONTROL', _ctrl),
+      ('Shift', 'VK_SHIFT', _shift),
+      ('Alt', 'VK_MENU', _alt),
+      (commandKeyLabel, 'Meta', _command),
+    ];
+    final modeSwitch = Row(
+      children: [
+        Checkbox(
+          value: _combinedKeyMode,
+          activeColor: _selectedColor,
+          checkColor: Colors.white,
+          side: const BorderSide(color: Colors.white70),
+          onChanged: _setCombinedKeyMode,
+        ),
+        Expanded(
+          child: InkWell(
+            onTap: () => _setCombinedKeyMode(!_combinedKeyMode),
+            child: Text(
+              translate('Combined key mode'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: Colors.white, fontSize: 16),
+            ),
+          ),
+        ),
+      ],
+    );
+    final modifierButtons = [
+      for (final modifier in modifiers)
+        Expanded(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: isPortrait ? 2 : 4),
+            child: _keyCap(
+              modifier.$1,
+              onTap: () => _toggleModifier(modifier.$2),
+              active: modifier.$3,
+            ),
+          ),
+        ),
+    ];
+
+    return SizedBox(
+      height: isPortrait ? 102 : 48,
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+            horizontal: isPortrait ? 8 : 42, vertical: 3),
+        child: isPortrait
+            ? Column(
+                children: [
+                  SizedBox(
+                    height: 48,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: SizedBox(width: 240, child: modeSwitch),
+                    ),
+                  ),
+                  Expanded(child: Row(children: modifierButtons)),
+                ],
+              )
+            : Row(
+                children: [
+                  SizedBox(width: 190, child: modeSwitch),
+                  ...modifierButtons,
+                ],
+              ),
+      ),
     );
   }
 
@@ -384,8 +420,11 @@ class _RemoteKeyboardPanelState extends State<RemoteKeyboardPanel> {
   ];
 
   Widget _buildKeyPage(List<List<_KeyboardKey>> rows) {
+    final isPortrait =
+        MediaQuery.of(context).orientation == Orientation.portrait;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(42, 4, 42, 0),
+      padding: EdgeInsets.fromLTRB(isPortrait ? 8 : 42, 4,
+          isPortrait ? 8 : 42, 0),
       child: Column(
         children: [
           for (final row in rows)
@@ -398,7 +437,8 @@ class _RemoteKeyboardPanelState extends State<RemoteKeyboardPanel> {
                       Expanded(
                         flex: key.flex,
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: isPortrait ? 2 : 4),
                           child: _keyCap(
                             key.label,
                             onTap: () => _sendKey(key.key),
