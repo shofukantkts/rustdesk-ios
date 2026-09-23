@@ -801,6 +801,11 @@ class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
     final y = size.height;
     final mobileActionMenus = _getMobileActionMenus();
     final menus = toolbarControls(context, id, gFFI);
+    // Custom: mouse-mode cursor speed (trackpad speed) adjustable from the mobile menu.
+    menus.add(TTextMenu(
+      child: Text(translate('Trackpad speed')),
+      onPressed: () => trackpadSpeedDialog(sessionId, gFFI),
+    ));
 
     final List<PopupMenuEntry<int>> more = [
       ...mobileActionMenus
