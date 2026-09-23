@@ -61,7 +61,7 @@ jobs:
           doNotCache: true
 
       - name: Cache vcpkg installed (arm64-ios)
-        uses: actions/cache@704facf57e6130b1bc63ef6567bb79d7d8fcf4a4 # v4
+        uses: actions/cache@6f8efc29b200d32929f49075959781ed54ec270c # v3
         with:
           path: ${{ github.workspace }}/vcpkg/installed
           key: vcpkg-ios-${{ env.VCPKG_COMMIT_ID }}-${{ hashFiles('vcpkg.json') }}
