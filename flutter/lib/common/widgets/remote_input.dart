@@ -487,11 +487,18 @@ class _RawTouchGestureDetectorRegionState
                     .toJson()));
       }
     } else {
-      // mobile
+      // mobile: two-finger pinch zooms the canvas, two-finger vertical
+      // drag scrolls the mouse wheel (滚轮).
       ffi.canvasModel.updateScale(d.scale / _scale, d.focalPoint);
       _scale = d.scale;
-      ffi.canvasModel.panX(d.focalPointDelta.dx);
-      ffi.canvasModel.panY(d.focalPointDelta.dy);
+      _mouseScrollIntegral += d.focalPointDelta.dy / 4;
+      if (_mouseScrollIntegral > 1) {
+        inputModel.scroll(1);
+        _mouseScrollIntegral = 0;
+      } else if (_mouseScrollIntegral < -1) {
+        inputModel.scroll(-1);
+        _mouseScrollIntegral = 0;
+      }
     }
   }
 
@@ -517,18 +524,11 @@ class _RawTouchGestureDetectorRegionState
   }
 
   get onHoldDragCancel => null;
-  get onThreeFingerVerticalDragUpdate => ffi.ffiModel.isPeerAndroid
-      ? null
-      : (d) {
-          _mouseScrollIntegral += d.delta.dy / 4;
-          if (_mouseScrollIntegral > 1) {
-            inputModel.scroll(1);
-            _mouseScrollIntegral = 0;
-          } else if (_mouseScrollIntegral < -1) {
-            inputModel.scroll(-1);
-            _mouseScrollIntegral = 0;
-          }
-        };
+  // Three-finger vertical drag now pans the canvas (拖动).
+  get onThreeFingerVerticalDragUpdate => (d) {
+        ffi.canvasModel.panX(d.delta.dx);
+        ffi.canvasModel.panY(d.delta.dy);
+      };
 
   makeGestures(BuildContext context) {
     return <Type, GestureRecognizerFactory>{

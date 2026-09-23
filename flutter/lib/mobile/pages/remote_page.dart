@@ -915,7 +915,19 @@ class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
   /// aka changeTouchMode
   BottomAppBar getGestureHelp() {
     return BottomAppBar(
-        child: SingleChildScrollView(
+        child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            style: IconButton.styleFrom(backgroundColor: Colors.black45),
+            tooltip: translate('Back'),
+            onPressed: () => setState(() => _showGestureHelp = false),
+          ),
+        ),
+        SingleChildScrollView(
             controller: ScrollController(),
             padding: EdgeInsets.symmetric(vertical: 10),
             child: GestureHelp(
@@ -927,7 +939,9 @@ class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
               },
               virtualMouseMode: gFFI.ffiModel.virtualMouseMode,
               inputModel: gFFI.inputModel,
-            )));
+            )),
+      ],
+    ));
   }
 
   // * Currently mobile does not enable map mode

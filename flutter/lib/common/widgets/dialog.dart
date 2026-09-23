@@ -21,15 +21,8 @@ import '../../models/platform_model.dart';
 import 'address_book.dart';
 
 void clientClose(SessionID sessionId, FFI ffi) async {
-  if (allowAskForNoteAtEndOfConnection(ffi, true)) {
-    if (await showConnEndAuditDialogCloseCanceled(ffi: ffi)) {
-      return;
-    }
-    closeConnection();
-  } else {
-    msgBox(sessionId, 'info', 'Close', 'Are you sure to close the connection?',
-        '', ffi.dialogManager);
-  }
+  // Custom: close the connection immediately without a confirmation dialog.
+  closeConnection();
 }
 
 abstract class ValidationRule {

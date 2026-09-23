@@ -309,7 +309,7 @@ class _GestureHelpState extends State<GestureHelp> {
                           GestureInfo(
                               width,
                               GestureIcons.iconGesturePinch,
-                              translate("Three-Finger Pinch"),
+                              translate("Pinch to Zoom"),
                               translate("Canvas Zoom")),
                         ]
                       : [
@@ -341,7 +341,7 @@ class _GestureHelpState extends State<GestureHelp> {
                           GestureInfo(
                               width,
                               GestureIcons.iconGesturePinch,
-                              translate("Three-Finger Pinch"),
+                              translate("Pinch to Zoom"),
                               translate("Canvas Zoom")),
                         ],
                 )),
