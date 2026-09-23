@@ -3895,9 +3895,11 @@ class FFI {
       textureModel.updateCurrentDisplay(display ?? 0);
     }
 
-    if (isDesktop) {
-      inputModel.updateTrackpadSpeed();
-    }
+    // Load the per-peer trackpad speed (persisted in the peer config file)
+    // on every session start, mobile included, so each peer keeps its own
+    // mouse-mode cursor speed across reconnects (per-session, persistent,
+    // isolated between peers).
+    inputModel.updateTrackpadSpeed();
 
     // CAUTION: `sessionStart()` and `sessionStartWithDisplays()` are an async functions.
     // Though the stream is returned immediately, the stream may not be ready.

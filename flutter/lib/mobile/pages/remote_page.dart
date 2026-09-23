@@ -525,6 +525,12 @@ class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Menu on top, keyboard below (menu/keyboard order swapped).
+            _semiTransparentControl(
+              icon: Icons.menu,
+              onPressed: () => setState(() => _showBar = !_showBar),
+            ),
+            const SizedBox(height: 12),
             _semiTransparentControl(
               icon: Icons.keyboard,
               onPressed: () {
@@ -540,11 +546,6 @@ class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
                 }
               },
             ),
-            const SizedBox(height: 12),
-            _semiTransparentControl(
-              icon: Icons.menu,
-              onPressed: () => setState(() => _showBar = !_showBar),
-            ),
           ],
         ),
       ),
@@ -559,7 +560,8 @@ class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
       color: Colors.black.withOpacity(0.45),
       shape: const CircleBorder(),
       child: IconButton(
-        icon: Icon(icon, color: Colors.white),
+        icon: Icon(icon, color: Colors.white, size: 32),
+        padding: const EdgeInsets.all(14),
         onPressed: onPressed,
       ));
   }
