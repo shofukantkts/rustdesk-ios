@@ -299,17 +299,17 @@ class _GestureHelpState extends State<GestureHelp> {
                           GestureInfo(
                               width,
                               GestureIcons.iconGestureFThreeFingers,
-                              translate("Three-Finger vertically"),
+                              translate("Two-Finger vertically"),
                               translate("Mouse Wheel")),
                           GestureInfo(
                               width,
                               GestureIcons.iconGestureFDrag,
-                              translate("Two-Finger Move"),
+                              translate("Three-Finger Move"),
                               translate("Canvas Move")),
                           GestureInfo(
                               width,
                               GestureIcons.iconGesturePinch,
-                              translate("Pinch to Zoom"),
+                              translate("Three-Finger Pinch"),
                               translate("Canvas Zoom")),
                         ]
                       : [
@@ -331,17 +331,17 @@ class _GestureHelpState extends State<GestureHelp> {
                           GestureInfo(
                               width,
                               GestureIcons.iconGestureFThreeFingers,
-                              translate("Three-Finger vertically"),
+                              translate("Two-Finger vertically"),
                               translate("Mouse Wheel")),
                           GestureInfo(
                               width,
                               GestureIcons.iconGestureFDrag,
-                              translate("Two-Finger Move"),
+                              translate("Three-Finger Move"),
                               translate("Canvas Move")),
                           GestureInfo(
                               width,
                               GestureIcons.iconGesturePinch,
-                              translate("Pinch to Zoom"),
+                              translate("Three-Finger Pinch"),
                               translate("Canvas Zoom")),
                         ],
                 )),

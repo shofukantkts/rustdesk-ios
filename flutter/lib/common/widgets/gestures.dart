@@ -48,16 +48,18 @@ class CustomTouchGestureRecognizer extends ScaleGestureRecognizer {
       if (d.pointerCount == 1 && _currentState != GestureState.oneFingerPan) {
         onOneFingerStartDebounce(d);
       } else if (d.pointerCount == 2 &&
-          _currentState != GestureState.twoFingerScale) {
-        onTwoFingerStartDebounce(d);
-      } else if (d.pointerCount == 3 &&
           _currentState != GestureState.threeFingerVerticalDrag) {
+        // Swapped: two fingers now scroll (was three-finger scroll).
         _currentState = GestureState.threeFingerVerticalDrag;
         if (onThreeFingerVerticalDragStart != null) {
           onThreeFingerVerticalDragStart!(
               DragStartDetails(globalPosition: d.localFocalPoint));
         }
-        debugPrint("start threeFingerScale");
+        debugPrint("start twoFingerScroll (swapped)");
+      } else if (d.pointerCount == 3 &&
+          _currentState != GestureState.twoFingerScale) {
+        // Swapped: three fingers now scale/pan (was two-finger).
+        onTwoFingerStartDebounce(d);
       }
       if (_currentState != GestureState.none) {
         switch (_currentState) {
@@ -154,11 +156,11 @@ class CustomTouchGestureRecognizer extends ScaleGestureRecognizer {
     if (_currentState == GestureState.threeFingerVerticalDrag) {
       _debounceTimer = Timer(Duration(milliseconds: 200), () {
         start(d);
-        debugPrint("debounce start twoFingerScale");
+        debugPrint("debounce start threeFingerScale (swapped)");
       });
     } else {
       start(d);
-      debugPrint("start twoFingerScale");
+      debugPrint("start threeFingerScale (swapped)");
     }
   }
 
