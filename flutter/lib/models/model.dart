@@ -2032,7 +2032,9 @@ class ImageModel with ChangeNotifier {
     final size = parent.target!.canvasModel.getSize();
     final xscale = size.width / _image!.width;
     final yscale = size.height / _image!.height;
-    return min(xscale, yscale) / 1.5;
+    // Fit-window (contain): the whole remote screen stays visible and the
+    // canvas cannot be zoomed out further, so no black bars around the image.
+    return min(xscale, yscale);
   }
 
   updateUserTextureRender() {
@@ -3263,6 +3265,12 @@ class CursorModel with ChangeNotifier {
     final scale = parent.target?.canvasModel.scale ?? 1.0;
     dx /= scale;
     dy /= scale;
+    // Apply the configurable mouse-mode cursor speed (trackpad speed).
+    final speed =
+        parent.target?.inputModel.trackpadSpeed ?? kDefaultTrackpadSpeed;
+    final speedFactor = speed / 100.0;
+    dx *= speedFactor;
+    dy *= speedFactor;
     final r = getVisibleRect();
     var cx = r.center.dx;
     var cy = r.center.dy;

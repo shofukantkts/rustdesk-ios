@@ -92,6 +92,10 @@ class _RawTouchGestureDetectorRegionState
   int _cacheLongPressPositionTs = 0;
   double _mouseScrollIntegral = 0; // mouse scroll speed controller
   double _scale = 1;
+  // true once the two-finger gesture is recognized as a pinch (cumulative scale
+  // deviates from 1); while false, two-finger gestures only scroll and never
+  // move/zoom the canvas (avoids scrolls drifting into pinch-pan).
+  bool _twoFingerIsPinch = false;
 
   // Workaround tap down event when two fingers are used to scale(mobile)
   TapDownDetails? _lastTapDownDetails;
@@ -449,6 +453,8 @@ class _RawTouchGestureDetectorRegionState
   // scale + pan event
   onTwoFingerScaleStart(ScaleStartDetails d) {
     _lastTapDownDetails = null;
+    _twoFingerIsPinch = false;
+    _scale = 1.0;
     if (isNotTouchBasedDevice()) {
       return;
     }
@@ -488,9 +494,16 @@ class _RawTouchGestureDetectorRegionState
       }
     } else {
       // mobile: two-finger pinch zooms the canvas, two-finger vertical
-      // drag scrolls the mouse wheel (滚轮).
-      ffi.canvasModel.updateScale(d.scale / _scale, d.focalPoint);
-      _scale = d.scale;
+      // drag scrolls the mouse wheel (滚轮). A dead-zone on the cumulative
+      // scale keeps parallel scrolls from drifting into canvas zoom/pan.
+      if (!_twoFingerIsPinch && (d.scale - 1).abs() > 0.05) {
+        _twoFingerIsPinch = true;
+        _scale = 1.0; // baseline so ratio is relative to pinch start
+      }
+      if (_twoFingerIsPinch) {
+        ffi.canvasModel.updateScale(d.scale / _scale, d.focalPoint);
+        _scale = d.scale;
+      }
       _mouseScrollIntegral += d.focalPointDelta.dy / 4;
       if (_mouseScrollIntegral > 1) {
         inputModel.scroll(1);
@@ -503,6 +516,7 @@ class _RawTouchGestureDetectorRegionState
   }
 
   onTwoFingerScaleEnd(ScaleEndDetails d) async {
+    _twoFingerIsPinch = false;
     if (isNotTouchBasedDevice()) {
       return;
     }
